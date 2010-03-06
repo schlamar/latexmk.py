@@ -99,7 +99,6 @@ class LatexMaker(object):
         if (re.search('No file %s.bbl.' % self.project_name, self.out) or
             re.search('LaTeX Warning: Citation .* undefined', self.out) or
             cite_counter != self.generate_citation_counter()):
-            print 'bib detected'
             make_bib = True
         elif os.path.isfile('%s.bib.old' % self.project_name):
             with nested(open('%s.bib' % self.project_name), 
