@@ -214,8 +214,12 @@ class LatexMaker(object):
             print 'Running bibtex...'
         Popen(['bibtex', '%s' % self.project_name], stdout=PIPE).wait()
         
-        shutil.copy('%s.bib' % self.project_name, 
-                    '%s.bib.old' % self.project_name)
+        try:
+            shutil.copy('%s.bib' % self.project_name, 
+                        '%s.bib.old' % self.project_name)
+        except IOError:
+            if self.verbose:
+                print 'File not found: "%s.bib"' % self.project_name
         
     def makeindex_runs(self):
         '''
