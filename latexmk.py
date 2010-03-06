@@ -2,9 +2,12 @@
 # coding: utf-8
 
 '''
-Generates LaTeX-PDF File, automatically runs as many
-times you need to get all references. Runs also
-bibtex and makeindex (package "glossaries").
+Latexmk.py completely automates the process of generating 
+a LaTeX document. Given the source files for a document, 
+latexmk.py issues the appropriate sequence of commands to 
+generate a .dvi or .pdf version of the document.  It can 
+also be set to run continuously with a previewer.
+
 
 Inspired by http://ctan.tug.org/tex-archive/support/latexmk/
 
@@ -52,19 +55,25 @@ from optparse import OptionParser, TitledHelpFormatter
 CITE_PATTERN = re.compile(r'\\citation\{(.*)\}')
 ERROR_PATTTERN = re.compile(r'(?:^! (.*\nl\..*)$)|(?:^! (.*)$)', re.M)
 
+LATEX_FLAGS = ['-interaction=nonstopmode', '-shell-escape']
+
 class LatexMaker(object):
     '''
     Main class for generation process.
     '''
-    def __init__(self, project_name, exit_on_error=True, verbose=True):
+    def __init__(self, project_name, exit_on_error=True, verbose=True,
+                 preview=False, pdf=False):
         self.project_name = project_name
         self.exit_on_error = exit_on_error
         self.verbose = verbose
+        if pdf:
+            self.latex_cmd = 'pdflatex'
+        else:
+            self.latex_cmd = 'latex'
         
         self.out = ''
         self.glossaries = dict()
         self.gloss_files = defaultdict(str)
-        
         
         if os.path.isfile('%s.aux' % self.project_name):
             cite_counter = self.generate_citation_counter()
@@ -111,10 +120,8 @@ class LatexMaker(object):
             
         self.write_log()
         
-        try:                              
-            os.startfile('%s.pdf' % self.project_name)
-        except AttributeError:
-            print 'Opening generated PDF only supported on win32.'
+        if preview:
+            self.open_preview(pdf)
     
     def read_glossaries(self):
         '''
@@ -141,7 +148,7 @@ class LatexMaker(object):
             print '\n'.join(chain.from_iterable(
                               errorlines.splitlines() for errorlines
                               in chain.from_iterable(errors) if errorlines))
-            
+            print '! See "latexmk.log" for details.'
             self.write_log()
             if self.exit_on_error:
                 print '! Exiting...'
@@ -189,21 +196,22 @@ class LatexMaker(object):
     
     def latex_run(self):
         '''
-        Start "latex" run.
+        Start latex run.
         '''
         if self.verbose:
-            print 'Running latex'
-        self.out, _ = Popen(['latex', '-interaction=nonstopmode', 
-                             '-shell-escape', '%s.tex' % self.project_name], 
-                             stdout=PIPE).communicate()
+            print 'Running latex...'
+        cmd = [self.latex_cmd]
+        cmd.extend(LATEX_FLAGS)
+        cmd.append('%s.tex' % self.project_name)
+        self.out, _ = Popen(cmd, stdout=PIPE).communicate()
         self.check_errors()
         
     def bibtex_run(self):
         '''
-        Start "bibtex" run.
+        Start bibtex run.
         '''
         if self.verbose:
-            print 'Running bibtex'
+            print 'Running bibtex...'
         Popen(['bibtex', '%s' % self.project_name], stdout=PIPE).wait()
         
         shutil.copy('%s.bib' % self.project_name, 
@@ -229,12 +237,32 @@ class LatexMaker(object):
                         
             if make_gloss:
                 if self.verbose:
-                    print 'Running makeindex (%s)' % gloss
+                    print 'Running makeindex (%s)...' % gloss
                 Popen(['makeindex', '-q',  '-s', '%s.ist' % self.project_name, 
                        '-o', fname_in, fname_out], stdout=PIPE).wait()
                 rerun_latex = True
                 
         return rerun_latex
+    
+    def open_preview(self, pdf):
+        '''
+        Try to open a preview of the generated document.
+        Currently only supported on Windows.
+        '''
+        if self.verbose:
+            print 'Opening preview...'
+        if pdf:
+            ext = 'pdf'
+        else:
+            ext = 'dvi'
+        try:                              
+            os.startfile('%s.%s' % (self.project_name, ext))
+        except AttributeError:
+            print ('Preview-Error: Preview function is currently only '
+                   'supported on Windows.')
+        except WindowsError:
+            print ('Preview-Error: Extension .%s is not linked to a '
+                   'specific application!' % ext)
 
 class CustomFormatter(TitledHelpFormatter):
     '''
@@ -280,12 +308,18 @@ def main():
     parser.add_option('-n', '--no-exit',
                       action='store_false', dest='exit_on_error', default=True,
                       help='don\'t exit if error occurs')
+    parser.add_option('-p', '--preview',
+                      action='store_true', dest='preview', default=False,
+                      help='try to open preview of generated document')
+    parser.add_option('--pdf', action='store_true', dest='pdf', 
+                      default=False, help='use "pdflatex" instead of latex')
     
     opt, args = parser.parse_args()
     if len(args) != 1:
         parser.error('incorrect number of arguments')
 
-    LatexMaker(args[0], opt.exit_on_error, opt.verbose)
+    LatexMaker(args[0], opt.exit_on_error, opt.verbose, opt.preview, 
+               opt.pdf)
     
 if __name__ == '__main__':
     main()
