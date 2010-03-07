@@ -55,6 +55,7 @@ CITE_PATTERN = re.compile(r'\\citation\{(.*)\}')
 ERROR_PATTTERN = re.compile(r'(?:^! (.*\nl\..*)$)|(?:^! (.*)$)', re.M)
 
 LATEX_FLAGS = ['-interaction=nonstopmode', '-shell-escape']
+MAX_RUNS = 5
 
 class LatexMaker(object):
     '''
@@ -89,10 +90,12 @@ class LatexMaker(object):
                     self.gloss_files[gloss] = fobj.read()
                     
         self.latex_run()
+        latex_runs = 1
         self.read_glossaries()
             
         if self.makeindex_runs():
             self.latex_run()
+            latex_runs += 1
                              
         make_bib = False
         if (re.search('No file %s.bbl.' % self.project_name, self.out) or
@@ -109,8 +112,9 @@ class LatexMaker(object):
         if make_bib and os.path.isfile('%s.bib' % self.project_name):
             self.bibtex_run()
             self.latex_run()
+            latex_runs += 1
                              
-        for _ in range(2):
+        for _ in range(MAX_RUNS - latex_runs):
             if (not re.search('LaTeX Warning: Reference .* '
                               'undefined', self.out)
                 and not re.search('LaTeX Warning: There were '
