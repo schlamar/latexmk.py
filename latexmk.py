@@ -286,7 +286,7 @@ def main():
     a new instance of L{LatexMaker}.
     '''
     version = '%%prog %s' % __version__
-    usage = 'Usage: python %prog [options] filename'
+    usage = 'Usage: %prog [options] filename'
     
     # Read description from doc
     doc_text = ''
