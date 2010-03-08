@@ -61,12 +61,11 @@ class LatexMaker(object):
     '''
     Main class for generation process.
     '''
-    def __init__(self, project_name, exit_on_error=True, verbose=True,
-                 preview=False, pdf=False):
+    def __init__(self, project_name, opt):
         self.project_name = project_name
-        self.exit_on_error = exit_on_error
-        self.verbose = verbose
-        if pdf:
+        self.opt = opt
+        
+        if self.opt.pdf:
             self.latex_cmd = 'pdflatex'
         else:
             self.latex_cmd = 'latex'
@@ -124,8 +123,8 @@ class LatexMaker(object):
             
         self.write_log()
         
-        if preview:
-            self.open_preview(pdf)
+        if self.opt.preview:
+            self.open_preview()
     
     def read_glossaries(self):
         '''
@@ -154,7 +153,7 @@ class LatexMaker(object):
                               in chain.from_iterable(errors) if errorlines))
             print '! See "latexmk.log" for details.'
             self.write_log()
-            if self.exit_on_error:
+            if self.opt.exit_on_error:
                 print '! Exiting...'
                 sys.exit(1)
                 
@@ -202,7 +201,7 @@ class LatexMaker(object):
         '''
         Start latex run.
         '''
-        if self.verbose:
+        if self.opt.verbose:
             print 'Running latex...'
         cmd = [self.latex_cmd]
         cmd.extend(LATEX_FLAGS)
@@ -214,7 +213,7 @@ class LatexMaker(object):
         '''
         Start bibtex run.
         '''
-        if self.verbose:
+        if self.opt.verbose:
             print 'Running bibtex...'
         Popen(['bibtex', '%s' % self.project_name], stdout=PIPE).wait()
         
@@ -240,7 +239,7 @@ class LatexMaker(object):
                         make_gloss = True
                         
             if make_gloss:
-                if self.verbose:
+                if self.opt.verbose:
                     print 'Running makeindex (%s)...' % gloss
                 Popen(['makeindex', '-q',  '-s', '%s.ist' % self.project_name, 
                        '-o', fname_in, fname_out], stdout=PIPE).wait()
@@ -248,14 +247,14 @@ class LatexMaker(object):
                 
         return rerun_latex
     
-    def open_preview(self, pdf):
+    def open_preview(self):
         '''
         Try to open a preview of the generated document.
         Currently only supported on Windows.
         '''
-        if self.verbose:
+        if self.opt.verbose:
             print 'Opening preview...'
-        if pdf:
+        if self.opt.pdf:
             ext = 'pdf'
         else:
             ext = 'dvi'
@@ -322,10 +321,7 @@ def main():
     if len(args) != 1:
         parser.error('incorrect number of arguments')
 
-    LatexMaker(args[0], opt.exit_on_error, opt.verbose, opt.preview, 
-               opt.pdf)
+    LatexMaker(args[0], opt)
     
 if __name__ == '__main__':
     main()
-        
-        
