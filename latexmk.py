@@ -53,6 +53,10 @@ from optparse import OptionParser, TitledHelpFormatter
 
 CITE_PATTERN = re.compile(r'\\citation\{(.*)\}')
 ERROR_PATTTERN = re.compile(r'(?:^! (.*\nl\..*)$)|(?:^! (.*)$)', re.M)
+LATEX_RERUN_PATTERNS = [re.compile(pattern) for pattern in 
+                        [r'LaTeX Warning: Reference .* undefined',
+                         r'LaTeX Warning: There were undefined references\.', 
+                         r'LaTeX Warning: Label\(s\) may have changed\.']]
 
 LATEX_FLAGS = ['-interaction=nonstopmode', '-shell-escape']
 MAX_RUNS = 5
@@ -114,10 +118,7 @@ class LatexMaker(object):
             latex_runs += 1
                              
         for _ in range(MAX_RUNS - latex_runs):
-            if (not re.search('LaTeX Warning: Reference .* '
-                              'undefined', self.out)
-                and not re.search('LaTeX Warning: There were '
-                                  'undefined references.', self.out)):
+            if not self.need_latex_rerun():
                 break
             self.latex_run()
             
@@ -170,8 +171,11 @@ class LatexMaker(object):
         Counts the citations in an aux-file.
         '''
         counter = defaultdict(int)
-        with open(aux_file) as fobj:
-            content = fobj.read()
+        try:
+            with open(aux_file) as fobj:
+                content = fobj.read()
+        except IOError:
+            return -1
         
         for match in CITE_PATTERN.finditer(content):
             name = match.groups()[0]
@@ -190,10 +194,12 @@ class LatexMaker(object):
         with open(filename) as fobj:
             main_aux = fobj.read()
         cite_counter[filename] = self.read_citations(filename)
-            
+        
         for match in re.finditer(r'\\@input\{(.*.aux)\}', main_aux):
             filename = match.groups()[0]
-            cite_counter[filename] = self.read_citations(filename)
+            counter = self.read_citations(filename)
+            if counter >= 0:
+                cite_counter[filename] = counter
         
         return cite_counter
     
@@ -202,7 +208,7 @@ class LatexMaker(object):
         Start latex run.
         '''
         if self.opt.verbose:
-            print 'Running latex...'
+            print 'Running %s...' % self.latex_cmd
         cmd = [self.latex_cmd]
         cmd.extend(LATEX_FLAGS)
         cmd.append('%s.tex' % self.project_name)
@@ -266,6 +272,12 @@ class LatexMaker(object):
         except WindowsError:
             print ('Preview-Error: Extension .%s is not linked to a '
                    'specific application!' % ext)
+                   
+    def need_latex_rerun(self):
+        for pattern in LATEX_RERUN_PATTERNS:
+            if pattern.search(self.out):
+                return True
+        return False
 
 class CustomFormatter(TitledHelpFormatter):
     '''
