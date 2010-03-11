@@ -56,7 +56,8 @@ ERROR_PATTTERN = re.compile(r'(?:^! (.*\nl\..*)$)|(?:^! (.*)$)', re.M)
 LATEX_RERUN_PATTERNS = [re.compile(pattern) for pattern in 
                         [r'LaTeX Warning: Reference .* undefined',
                          r'LaTeX Warning: There were undefined references\.', 
-                         r'LaTeX Warning: Label\(s\) may have changed\.']]
+                         r'LaTeX Warning: Label\(s\) may have changed\.',
+                         r'No file .*\.toc\.']]
 TEXLIPSE_MAIN_PATTERN = re.compile(r'^mainTexFile=(.*)(?:\.tex)$', re.M)
 
 LATEX_FLAGS = ['-interaction=nonstopmode', '-shell-escape']
