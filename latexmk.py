@@ -37,7 +37,7 @@ THE SOFTWARE.
 '''
 
 __author__ = 'Marc Schlaich'
-__version__ = '0.1'
+__version__ = '0.2beta'
 __license__ = 'MIT'
 
 from subprocess import Popen, PIPE
@@ -57,6 +57,7 @@ LATEX_RERUN_PATTERNS = [re.compile(pattern) for pattern in
                         [r'LaTeX Warning: Reference .* undefined',
                          r'LaTeX Warning: There were undefined references\.', 
                          r'LaTeX Warning: Label\(s\) may have changed\.']]
+TEXLIPSE_MAIN_PATTERN = re.compile(r'^mainTexFile=(.*)(?:\.tex)$', re.M)
 
 LATEX_FLAGS = ['-interaction=nonstopmode', '-shell-escape']
 MAX_RUNS = 5
@@ -66,6 +67,20 @@ class LatexMaker(object):
     Main class for generation process.
     '''
     def __init__(self, project_name, opt):
+        # Try to parse ".texlipse" if it is provided as project name
+        if project_name == '.texlipse':
+            with open('.texlipse') as fobj:
+                content = fobj.read()
+            match = TEXLIPSE_MAIN_PATTERN.search(content)
+            if match:
+                project_name = match.groups()[0]
+                if opt.verbose:
+                    print ('Found inputfile in ".texlipse": %s.tex' 
+                           % project_name)
+            else:
+                print '! Fatal error: Parsing .texlipse failed.'
+                sys.exit(1)
+        
         self.project_name = project_name
         self.opt = opt
         
