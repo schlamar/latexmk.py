@@ -105,6 +105,10 @@ class LatexMaker(object):
         else:
             cite_counter = {'%s.aux' % self.project_name: 
                             defaultdict(int)}
+            
+        if os.path.isfile('%s.toc' % self.project_name):
+            shutil.copy('%s.toc' % self.project_name, 
+                        '%s.toc.old' % self.project_name)
               
         for gloss in self.glossaries:
             ext = self.glossaries[gloss][1]
@@ -116,8 +120,20 @@ class LatexMaker(object):
         self.latex_run()
         latex_runs = 1
         self.read_glossaries()
-            
-        if self.makeindex_runs():
+        
+        # Check if *.toc has changed
+        run_for_toc = False
+        if os.path.isfile('%s.toc' % self.project_name):
+            if not os.path.isfile('%s.toc.old' % self.project_name):
+                run_for_toc = True
+            else:
+                new = '%s.toc' % self.project_name
+                old = '%s.toc.old' % self.project_name
+                with nested(open(new), open(old)) as (f_new, f_old):
+                    if f_new.read() != f_old.read():
+                        run_for_toc = True
+                        
+        if run_for_toc or self.makeindex_runs():
             self.latex_run()
             latex_runs += 1
                              
@@ -127,9 +143,9 @@ class LatexMaker(object):
             cite_counter != self.generate_citation_counter()):
             make_bib = True
         elif os.path.isfile('%s.bib.old' % self.project_name):
-            with nested(open('%s.bib' % self.project_name), 
-                        open('%s.bib.old' % self.project_name)) as (f_new, 
-                                                                    f_old):
+            new = '%s.bib' % self.project_name
+            old = '%s.bib.old' % self.project_name
+            with nested(open(new), open(old)) as (f_new, f_old):
                 if f_new.read() != f_old.read():
                     make_bib = True
             
