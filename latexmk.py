@@ -41,6 +41,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 '''
 
+from __future__ import with_statement
+
 __author__ = 'Marc Schlaich'
 __version__ = '0.2beta'
 __license__ = 'MIT'
@@ -186,9 +188,8 @@ class LatexMaker(object):
         if errors:
             print
             print '! Errors occurred:'
-            print '\n'.join(chain.from_iterable(
-                              errorlines.splitlines() for errorlines
-                              in chain.from_iterable(errors) if errorlines))
+            print '\n'.join([error.replace('\r', '').strip() for error
+                            in chain(*errors) if error.strip()])
             print '! See "latexmk.log" for details.'
             self.write_log()
             if self.opt.exit_on_error:
@@ -311,6 +312,9 @@ class LatexMaker(object):
                    'specific application!' % ext)
                    
     def need_latex_rerun(self):
+        '''
+        Test for all rerun patterns if they match the output.
+        '''
         for pattern in LATEX_RERUN_PATTERNS:
             if pattern.search(self.out):
                 return True
