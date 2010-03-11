@@ -60,7 +60,7 @@ from optparse import OptionParser, TitledHelpFormatter
 
 CITE_PATTERN = re.compile(r'\\citation\{(.*)\}')
 ERROR_PATTTERN = re.compile(r'(?:^! (.*\nl\..*)$)|(?:^! (.*)$)', re.M)
-LATEX_RERUN_PATTERNS = [re.compile(pattern) for pattern in 
+LATEX_RERUN_PATTERNS = [re.compile(pattr) for pattr in 
                         [r'LaTeX Warning: Reference .* undefined',
                          r'LaTeX Warning: There were undefined references\.', 
                          r'LaTeX Warning: Label\(s\) may have changed\.',
