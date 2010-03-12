@@ -43,19 +43,22 @@ THE SOFTWARE.
 
 from __future__ import with_statement
 
+from collections import defaultdict
+from contextlib import nested
+from itertools import chain
+from optparse import OptionParser, TitledHelpFormatter
+from subprocess import Popen, PIPE
+
+import os
+import re
+import shutil
+import sys
+import time
+
 __author__ = 'Marc Schlaich'
 __version__ = '0.2beta'
 __license__ = 'MIT'
 
-from subprocess import Popen, PIPE
-import re
-import os
-import sys
-from collections import defaultdict
-from contextlib import nested
-import shutil
-from itertools import chain
-from optparse import OptionParser, TitledHelpFormatter
 
 
 CITE_PATTERN = re.compile(r'\\citation\{(.*)\}')
@@ -78,7 +81,7 @@ class LatexMaker(object):
         self.opt = opt
         
         if project_name == '.texlipse':
-            self._parse_texlipse_config()
+            self.project_name = self._parse_texlipse_config()
         else:
             self.project_name = project_name
         
@@ -96,7 +99,8 @@ class LatexMaker(object):
         self.latex_run()
         self.read_glossaries()
         
-        if self._is_toc_changed(toc_file) or self.makeindex_runs(gloss_files):
+        gloss_changed = self.makeindex_runs(gloss_files)
+        if gloss_changed or self._is_toc_changed(toc_file):
             self.latex_run()
   
         if self._need_bib_run(cite_counter):
@@ -118,6 +122,17 @@ class LatexMaker(object):
         Read the project name from the texlipse
         config file ".texlipse".
         '''
+        # If Eclipse's workspace refresh, the 
+        # ".texlipse"-File will be newly created,
+        # so try again after short sleep if 
+        # the file is still missing.
+        if not os.path.isfile('.texlipse'):
+            time.sleep(0.1)
+            if not os.path.isfile('.texlipse'):
+                print '! Fatal error: File .texlipse is missing.'
+                print '! Exiting...'
+                sys.exit(1)
+        
         with open('.texlipse') as fobj:
             content = fobj.read()
         match = TEXLIPSE_MAIN_PATTERN.search(content)
@@ -126,6 +141,7 @@ class LatexMaker(object):
             if self.opt.verbose:
                 print ('Found inputfile in ".texlipse": %s.tex' 
                        % project_name)
+            return project_name
         else:
             print '! Fatal error: Parsing .texlipse failed.'
             print '! Exiting...'
@@ -175,8 +191,8 @@ class LatexMaker(object):
         '''
         fname = '%s.toc' % self.project_name
         if os.path.isfile(fname):
-            with open(fname):
-                if fname != toc_file:
+            with open(fname) as fobj:
+                if fobj.read() != toc_file:
                     return True
                     
     def _need_bib_run(self, old_cite_counter):
@@ -313,7 +329,10 @@ class LatexMaker(object):
                 make_gloss = True
             else:
                 with open(fname_out) as fobj:
-                    if gloss_files[gloss] != fobj.read():
+                    try:
+                        if gloss_files[gloss] != fobj.read():
+                            make_gloss = True
+                    except KeyError:
                         make_gloss = True
                         
             if make_gloss:
