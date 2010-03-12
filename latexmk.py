@@ -75,22 +75,12 @@ class LatexMaker(object):
     Main class for generation process.
     '''
     def __init__(self, project_name, opt):
-        # Try to parse ".texlipse" if it is provided as project name
-        if project_name == '.texlipse':
-            with open('.texlipse') as fobj:
-                content = fobj.read()
-            match = TEXLIPSE_MAIN_PATTERN.search(content)
-            if match:
-                project_name = match.groups()[0]
-                if opt.verbose:
-                    print ('Found inputfile in ".texlipse": %s.tex' 
-                           % project_name)
-            else:
-                print '! Fatal error: Parsing .texlipse failed.'
-                sys.exit(1)
-        
-        self.project_name = project_name
         self.opt = opt
+        
+        if project_name == '.texlipse':
+            self._parse_texlipse_config()
+        else:
+            self.project_name = project_name
         
         if self.opt.pdf:
             self.latex_cmd = 'pdflatex'
@@ -99,64 +89,21 @@ class LatexMaker(object):
         
         self.out = ''
         self.glossaries = dict()
-        self.gloss_files = defaultdict(str)
+        self.latex_run_counter = 0
         
-        if os.path.isfile('%s.aux' % self.project_name):
-            cite_counter = self.generate_citation_counter()
-            self.read_glossaries()
-        else:
-            cite_counter = {'%s.aux' % self.project_name: 
-                            defaultdict(int)}
-            
-        if os.path.isfile('%s.toc' % self.project_name):
-            shutil.copy('%s.toc' % self.project_name, 
-                        '%s.toc.old' % self.project_name)
-              
-        for gloss in self.glossaries:
-            ext = self.glossaries[gloss][1]
-            filename = '%s.%s' % (self.project_name, ext)
-            if os.path.isfile(filename):
-                with open(filename) as fobj:
-                    self.gloss_files[gloss] = fobj.read()
+        cite_counter, toc_file, gloss_files = self._read_latex_files()
                     
         self.latex_run()
-        latex_runs = 1
         self.read_glossaries()
         
-        # Check if *.toc has changed
-        run_for_toc = False
-        if os.path.isfile('%s.toc' % self.project_name):
-            if not os.path.isfile('%s.toc.old' % self.project_name):
-                run_for_toc = True
-            else:
-                new = '%s.toc' % self.project_name
-                old = '%s.toc.old' % self.project_name
-                with nested(open(new), open(old)) as (f_new, f_old):
-                    if f_new.read() != f_old.read():
-                        run_for_toc = True
-                        
-        if run_for_toc or self.makeindex_runs():
+        if self._is_toc_changed(toc_file) or self.makeindex_runs(gloss_files):
             self.latex_run()
-            latex_runs += 1
-                             
-        make_bib = False
-        if (re.search('No file %s.bbl.' % self.project_name, self.out) or
-            re.search('LaTeX Warning: Citation .* undefined', self.out) or
-            cite_counter != self.generate_citation_counter()):
-            make_bib = True
-        elif os.path.isfile('%s.bib.old' % self.project_name):
-            new = '%s.bib' % self.project_name
-            old = '%s.bib.old' % self.project_name
-            with nested(open(new), open(old)) as (f_new, f_old):
-                if f_new.read() != f_old.read():
-                    make_bib = True
-            
-        if make_bib and os.path.isfile('%s.bib' % self.project_name):
+  
+        if self._need_bib_run(cite_counter):
             self.bibtex_run()
             self.latex_run()
-            latex_runs += 1
                              
-        for _ in range(MAX_RUNS - latex_runs):
+        while (self.latex_run_counter < MAX_RUNS):
             if not self.need_latex_rerun():
                 break
             self.latex_run()
@@ -165,6 +112,98 @@ class LatexMaker(object):
         
         if self.opt.preview:
             self.open_preview()
+            
+    def _parse_texlipse_config(self):
+        '''
+        Read the project name from the texlipse
+        config file ".texlipse".
+        '''
+        with open('.texlipse') as fobj:
+            content = fobj.read()
+        match = TEXLIPSE_MAIN_PATTERN.search(content)
+        if match:
+            project_name = match.groups()[0]
+            if self.opt.verbose:
+                print ('Found inputfile in ".texlipse": %s.tex' 
+                       % project_name)
+        else:
+            print '! Fatal error: Parsing .texlipse failed.'
+            print '! Exiting...'
+            sys.exit(1)
+            
+    def _read_latex_files(self):
+        '''
+        Check if some latex output files exist
+        before first latex run, process them and return 
+        the generated data.
+        
+            - Parsing *.aux for citations counter and 
+              existing glossaries.
+            - Getting content of files to detect changes.
+                - *.toc file
+                - all available glossaries files
+        '''
+        if os.path.isfile('%s.aux' % self.project_name):
+            cite_counter = self.generate_citation_counter()
+            self.read_glossaries()
+        else:
+            cite_counter = {'%s.aux' % self.project_name: 
+                            defaultdict(int)}
+        
+        fname = '%s.toc' % self.project_name
+        if os.path.isfile(fname):
+            with open(fname) as fobj:
+                toc_file = fobj.read()
+        else:
+            toc_file = ''
+        
+        gloss_files = dict()      
+        for gloss in self.glossaries:
+            ext = self.glossaries[gloss][1]
+            filename = '%s.%s' % (self.project_name, ext)
+            if os.path.isfile(filename):
+                with open(filename) as fobj:
+                    gloss_files[gloss] = fobj.read()
+                    
+        return cite_counter, toc_file, gloss_files
+
+            
+    def _is_toc_changed(self, toc_file):
+        '''
+        Test if the *.toc file has changed during
+        the first latex run.
+        '''
+        fname = '%s.toc' % self.project_name
+        if os.path.isfile(fname):
+            with open(fname):
+                if fname != toc_file:
+                    return True
+                    
+    def _need_bib_run(self, old_cite_counter):
+        '''
+        Determine if you need to run "bibtex".
+        1. Check if *.bib exists.
+        2. Check latex output for hints.
+        3. Test if the numbers of citations changed
+           during first latex run.
+        4. Examine *.bib for changes.
+        '''
+        if not os.path.isfile('%s.bib' % self.project_name):
+            return False
+        
+        if (re.search('No file %s.bbl.' % self.project_name, self.out) or
+            re.search('LaTeX Warning: Citation .* undefined', self.out)):
+            return True
+        
+        if old_cite_counter != self.generate_citation_counter():
+            return True
+        
+        if os.path.isfile('%s.bib.old' % self.project_name):
+            new = '%s.bib' % self.project_name
+            old = '%s.bib.old' % self.project_name
+            with nested(open(new), open(old)) as (f_new, f_old):
+                if f_new.read() != f_old.read():
+                    return True
     
     def read_glossaries(self):
         '''
@@ -185,11 +224,20 @@ class LatexMaker(object):
         scanning the output.
         '''
         errors = ERROR_PATTTERN.findall(self.out)
+        # "errors" is a list of tuples
         if errors:
             print
             print '! Errors occurred:'
+            
+            # pylint: disable-msg=W0142
+            # With reference doc for itertools.chain there 
+            # is no magic at all.
+            # Removing carriage return "\r" because it is 
+            # a new line in Eclipse console.
             print '\n'.join([error.replace('\r', '').strip() for error
                             in chain(*errors) if error.strip()])
+            # pylint: enable-msg=W0142
+            
             print '! See "latexmk.log" for details.'
             self.write_log()
             if self.opt.exit_on_error:
@@ -203,24 +251,7 @@ class LatexMaker(object):
         '''
         with open('latexmk.log', 'w') as fobj:
             fobj.writelines('%s\n' % line for line in self.out.splitlines())
-    
-    def read_citations(self, aux_file):
-        '''
-        Counts the citations in an aux-file.
-        '''
-        counter = defaultdict(int)
-        try:
-            with open(aux_file) as fobj:
-                content = fobj.read()
-        except IOError:
-            return -1
-        
-        for match in CITE_PATTERN.finditer(content):
-            name = match.groups()[0]
-            counter[name] += 1
-        
-        return counter
-    
+
     def generate_citation_counter(self):
         '''
         Generate dictionary with the number of citations in all
@@ -231,11 +262,11 @@ class LatexMaker(object):
         filename = '%s.aux' % self.project_name
         with open(filename) as fobj:
             main_aux = fobj.read()
-        cite_counter[filename] = self.read_citations(filename)
+        cite_counter[filename] = _count_citations(filename)
         
         for match in re.finditer(r'\\@input\{(.*.aux)\}', main_aux):
             filename = match.groups()[0]
-            counter = self.read_citations(filename)
+            counter = _count_citations(filename)
             if counter >= 0:
                 cite_counter[filename] = counter
         
@@ -251,6 +282,7 @@ class LatexMaker(object):
         cmd.extend(LATEX_FLAGS)
         cmd.append('%s.tex' % self.project_name)
         self.out, _ = Popen(cmd, stdout=PIPE).communicate()
+        self.latex_run_counter += 1
         self.check_errors()
         
     def bibtex_run(self):
@@ -264,12 +296,14 @@ class LatexMaker(object):
         shutil.copy('%s.bib' % self.project_name, 
                     '%s.bib.old' % self.project_name)
         
-    def makeindex_runs(self):
+    def makeindex_runs(self, gloss_files):
         '''
         Check for each glossary if it has to be regenerated 
         with "makeindex".
+        
+        @return: True if "makeindex" was called.
         '''
-        rerun_latex = False
+        gloss_changed = False
         for gloss in self.glossaries:
             make_gloss = False
             ext_i, ext_o = self.glossaries[gloss]
@@ -279,7 +313,7 @@ class LatexMaker(object):
                 make_gloss = True
             else:
                 with open(fname_out) as fobj:
-                    if self.gloss_files[gloss] != fobj.read():
+                    if gloss_files[gloss] != fobj.read():
                         make_gloss = True
                         
             if make_gloss:
@@ -287,9 +321,9 @@ class LatexMaker(object):
                     print 'Running makeindex (%s)...' % gloss
                 Popen(['makeindex', '-q',  '-s', '%s.ist' % self.project_name, 
                        '-o', fname_in, fname_out], stdout=PIPE).wait()
-                rerun_latex = True
+                gloss_changed = True
                 
-        return rerun_latex
+        return gloss_changed
     
     def open_preview(self):
         '''
@@ -331,6 +365,25 @@ class CustomFormatter(TitledHelpFormatter):
         Description is manual formatted, no changes are done.
         '''
         return description
+    
+def _count_citations(aux_file):
+    '''
+    Counts the citations in an aux-file.
+    
+    @return: defaultdict(int) - {citation_name: number, ...}
+    '''
+    counter = defaultdict(int)
+    try:
+        with open(aux_file) as fobj:
+            content = fobj.read()
+    except IOError:
+        return -1
+    
+    for match in CITE_PATTERN.finditer(content):
+        name = match.groups()[0]
+        counter[name] += 1
+    
+    return counter
     
 def main():
     '''
