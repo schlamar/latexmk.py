@@ -62,7 +62,8 @@ __license__ = 'MIT'
 
 
 CITE_PATTERN = re.compile(r'\\citation\{(.*)\}')
-ERROR_PATTTERN = re.compile(r'(?:^! (.*\nl\..*)$)|(?:^! (.*)$)', re.M)
+ERROR_PATTTERN = re.compile(r'(?:^! (.*\nl\..*)$)|(?:^! (.*)$)|'
+                            '(No pages of output.)', re.M)
 LATEX_RERUN_PATTERNS = [re.compile(pattr) for pattr in 
                         [r'LaTeX Warning: Reference .* undefined',
                          r'LaTeX Warning: There were undefined references\.', 
