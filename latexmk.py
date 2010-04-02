@@ -298,7 +298,7 @@ class LatexMaker(object):
         cmd = [self.latex_cmd]
         cmd.extend(LATEX_FLAGS)
         cmd.append('%s.tex' % self.project_name)
-        self.out, _ = Popen(cmd, stdout=PIPE).communicate()
+        self.out = Popen(cmd, stdout=PIPE).communicate()[0]
         self.latex_run_counter += 1
         self.check_errors()
         
