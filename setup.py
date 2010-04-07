@@ -16,7 +16,7 @@ setup(
                         'version of the document.'),
       author=latexmk.__author__,  
       author_email='marc.schlaich@googlemail.com',
-      url='http://bitbucket.org/ice2k3/latexmk.py/',
+      url='http://bitbucket.org/ms4py/latexmk.py/',
       license=latexmk.__license__,
       platforms = 'any',
       classifiers=['Development Status :: 4 - Beta',

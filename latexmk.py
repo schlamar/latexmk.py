@@ -10,7 +10,7 @@ It is specialized to run as a custom builder for the
 Eclipse-Plugin "Texlipse".
 
 See Website for details:
-http://bitbucket.org/ice2k3/latexmk.py/
+http://bitbucket.org/ms4py/latexmk.py/
 
 
 Inspired by http://ctan.tug.org/tex-archive/support/latexmk/
@@ -68,7 +68,7 @@ LATEX_RERUN_PATTERNS = [re.compile(pattr) for pattr in
                         [r'LaTeX Warning: Reference .* undefined',
                          r'LaTeX Warning: There were undefined references\.', 
                          r'LaTeX Warning: Label\(s\) may have changed\.',
-                         r'No file .*\.toc\.']]
+                         r'No file .*(\.toc|\.lof)\.']]
 TEXLIPSE_MAIN_PATTERN = re.compile(r'^mainTexFile=(.*)(?:\.tex)$', re.M)
 
 LATEX_FLAGS = ['-interaction=nonstopmode', '-shell-escape']
