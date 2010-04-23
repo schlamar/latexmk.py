@@ -128,8 +128,9 @@ class LatexMaker(object):
         if not os.path.isfile('.texlipse'):
             time.sleep(0.1)
             if not os.path.isfile('.texlipse'):
-                print '! Fatal error: File .texlipse is missing.'
-                print '! Exiting...'
+                print >> sys.stderr, \
+                    '! Fatal error: File .texlipse is missing.'
+                print >> sys.stderr, '! Exiting...'
                 sys.exit(1)
         
         with open('.texlipse') as fobj:
@@ -142,8 +143,8 @@ class LatexMaker(object):
                        % project_name)
             return project_name
         else:
-            print '! Fatal error: Parsing .texlipse failed.'
-            print '! Exiting...'
+            print >> sys.stderr, '! Fatal error: Parsing .texlipse failed.'
+            print >> sys.stderr, '! Exiting...'
             sys.exit(1)
             
     def _read_latex_files(self):
@@ -241,21 +242,23 @@ class LatexMaker(object):
         errors = ERROR_PATTTERN.findall(self.out)
         # "errors" is a list of tuples
         if errors:
-            print
-            print '! Errors occurred:'
+            print >> sys.stderr, '! Errors occurred:'
             
             # pylint: disable-msg=W0142
             # With reference doc for itertools.chain there 
             # is no magic at all.
             # Removing carriage return "\r" because it is 
             # a new line in Eclipse console.
-            print '\n'.join([error.replace('\r', '').strip() for error
-                            in chain(*errors) if error.strip()])
+            print >> sys.stderr, '\n'.join(
+                [error.replace('\r', '').strip() for error
+                in chain(*errors) if error.strip()]
+            )
             # pylint: enable-msg=W0142
             
-            print '! See "%s.log" for details.' % self.project_name
+            print >> sys.stderr, ('! See "%s.log" for details.'
+                                  % self.project_name)
             if self.opt.exit_on_error:
-                print '! Exiting...'
+                print >> sys.stderr, '! Exiting...'
                 sys.exit(1)
                
 
@@ -349,11 +352,15 @@ class LatexMaker(object):
         try:                              
             os.startfile('%s.%s' % (self.project_name, ext))
         except AttributeError:
-            print ('Preview-Error: Preview function is currently only '
-                   'supported on Windows.')
+            print >> sys.stderr, (
+                'Preview-Error: Preview function is currently only '
+                'supported on Windows.'
+            )
         except WindowsError:
-            print ('Preview-Error: Extension .%s is not linked to a '
-                   'specific application!' % ext)
+            print >> sys.stderr, (
+                'Preview-Error: Extension .%s is not linked to a '
+                'specific application!' % ext
+            )
                    
     def need_latex_rerun(self):
         '''
