@@ -280,8 +280,11 @@ class LatexMaker(object):
         
         for match in re.finditer(r'\\@input\{(.*.aux)\}', main_aux):
             filename = match.groups()[0]
-            counter = _count_citations(filename)
-            if counter >= 0:
+            try:
+                counter = _count_citations(filename)
+            except IOError:
+                pass
+            else:
                 cite_counter[filename] = counter
         
         return cite_counter
@@ -407,12 +410,9 @@ def _count_citations(aux_file):
     @return: defaultdict(int) - {citation_name: number, ...}
     '''
     counter = defaultdict(int)
-    try:
-        with open(aux_file) as fobj:
-            content = fobj.read()
-    except IOError:
-        return -1
-    
+    with open(aux_file) as fobj:
+        content = fobj.read()
+
     for match in CITE_PATTERN.finditer(content):
         name = match.groups()[0]
         counter[name] += 1
