@@ -112,8 +112,6 @@ class LatexMaker(object):
             if not self.need_latex_rerun():
                 break
             self.latex_run()
-            
-        self.write_log()
         
         if self.opt.preview:
             self.open_preview()
@@ -255,19 +253,11 @@ class LatexMaker(object):
                             in chain(*errors) if error.strip()])
             # pylint: enable-msg=W0142
             
-            print '! See "latexmk.log" for details.'
-            self.write_log()
+            print '! See "%s.log" for details.' % self.project_name
             if self.opt.exit_on_error:
                 print '! Exiting...'
                 sys.exit(1)
-                
-    def write_log(self):
-        '''
-        Write the output from the last latex run into
-        a log file.
-        '''
-        with open('latexmk.log', 'w') as fobj:
-            fobj.writelines('%s\n' % line for line in self.out.splitlines())
+               
 
     def generate_citation_counter(self):
         '''
