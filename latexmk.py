@@ -73,6 +73,10 @@ TEXLIPSE_MAIN_PATTERN = re.compile(r'^mainTexFile=(.*)(?:\.tex)$', re.M)
 
 LATEX_FLAGS = ['-interaction=nonstopmode', '-shell-escape']
 MAX_RUNS = 5
+NO_LATEX_ERROR = (
+    'Could not run command "%s". '
+    'Is your latex distribution under your PATH?'
+)
 
 class LatexMaker(object):
     '''
@@ -291,7 +295,10 @@ class LatexMaker(object):
         cmd = [self.latex_cmd]
         cmd.extend(LATEX_FLAGS)
         cmd.append('%s.tex' % self.project_name)
-        self.out = Popen(cmd, stdout=PIPE).communicate()[0]
+        try:
+            self.out = Popen(cmd, stdout=PIPE).communicate()[0]
+        except OSError:
+            print >> sys.stderr, NO_LATEX_ERROR % self.latex_cmd
         self.latex_run_counter += 1
         self.check_errors()
         
@@ -301,7 +308,11 @@ class LatexMaker(object):
         '''
         if self.opt.verbose:
             print 'Running bibtex...'
-        Popen(['bibtex', '%s' % self.project_name], stdout=PIPE).wait()
+        try:
+            Popen(['bibtex', '%s' % self.project_name], stdout=PIPE).wait()
+        except OSError:
+            print >> sys.stderr, NO_LATEX_ERROR % 'bibtex'
+            sys.exit(1)
         
         shutil.copy('%s.bib' % self.project_name, 
                     '%s.bib.old' % self.project_name)
@@ -332,8 +343,14 @@ class LatexMaker(object):
             if make_gloss:
                 if self.opt.verbose:
                     print 'Running makeindex (%s)...' % gloss
-                Popen(['makeindex', '-q',  '-s', '%s.ist' % self.project_name, 
-                       '-o', fname_in, fname_out], stdout=PIPE).wait()
+                try:
+                    Popen(['makeindex', '-q',  '-s', 
+                           '%s.ist' % self.project_name, 
+                           '-o', fname_in, fname_out], 
+                           stdout=PIPE).wait()
+                except OSError:
+                    print >> sys.stderr, NO_LATEX_ERROR % 'makeindex'
+                    sys.exit(1)
                 gloss_changed = True
                 
         return gloss_changed
