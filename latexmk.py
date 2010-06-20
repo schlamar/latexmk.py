@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8
 
 '''
@@ -335,6 +335,8 @@ class LatexMaker(object):
             fname_out = '%s.%s' % (self.project_name, ext_o)
             if re.search('No file %s.' % fname_in, self.out):
                 make_gloss = True
+            if not os.path.isfile(fname_out):
+                make_gloss = False
             else:
                 with open(fname_out) as fobj:
                     try:
