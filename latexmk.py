@@ -99,6 +99,11 @@ class LatexMaker(object):
         self.glossaries = dict()
         self.latex_run_counter = 0
         
+        # store files
+        self.old_dir = []
+        if self.opt.clean:
+            self.old_dir = os.listdir('.')
+        
         cite_counter, toc_file, gloss_files = self._read_latex_files()
                     
         self.latex_run()
@@ -116,6 +121,18 @@ class LatexMaker(object):
             if not self.need_latex_rerun():
                 break
             self.latex_run()
+            
+        if self.opt.clean:
+            ending = '.dvi'
+            if self.opt.pdf:
+                ending = '.pdf'
+                
+            for fname in os.listdir('.'):
+                if not (fname in self.old_dir or fname.endswith(ending)):
+                    try:
+                        os.remove(fname)
+                    except IOError:
+                        pass
         
         if self.opt.preview:
             self.open_preview()
@@ -447,6 +464,9 @@ def main():
     parser = OptionParser(usage=usage, version=version, 
                           description=description, 
                           formatter=CustomFormatter())
+    parser.add_option('-c', '--clean',
+                      action='store_true', dest='clean', default=False,
+                      help='clean all temporary files after converting')                      
     parser.add_option('-q', '--quiet',
                       action='store_false', dest='verbose', default=True,
                       help='don\'t print status messages to stdout')
