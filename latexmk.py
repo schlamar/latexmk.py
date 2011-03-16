@@ -89,6 +89,9 @@ class LatexMaker(object):
             self.project_name = self._parse_texlipse_config()
         else:
             self.project_name = project_name
+            
+        if self.project_name.endswith('.tex'):
+            self.project_name = self.project_name[:-4]
         
         if self.opt.pdf:
             self.latex_cmd = 'pdflatex'
