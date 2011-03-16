@@ -480,7 +480,7 @@ def main():
                       action='store_true', dest='preview', default=False,
                       help='try to open preview of generated document')
     parser.add_option('--pdf', action='store_true', dest='pdf', 
-                      default=False, help='use "pdflatex" instead of latex')
+                      default=True, help='use "pdflatex" instead of latex')
     
     opt, args = parser.parse_args()
     if len(args) != 1:
