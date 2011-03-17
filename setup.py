@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from distutils.core import setup
+from setuptools import setup
 
 import latexmk
 
@@ -26,5 +26,6 @@ setup(
                    'Programming Language :: Python',
                    'Topic :: Printing',
                    'Topic :: Text Processing :: Markup :: LaTeX'],
-      scripts = ['latexmk.py']
+      scripts = ['latexmk.py'],
+      use_2to3 = True
       )
