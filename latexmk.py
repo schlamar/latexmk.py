@@ -44,7 +44,6 @@ THE SOFTWARE.
 from __future__ import with_statement
 
 from collections import defaultdict
-from contextlib import nested
 from itertools import chain
 from optparse import OptionParser, TitledHelpFormatter
 from subprocess import Popen, PIPE
@@ -241,9 +240,10 @@ class LatexMaker(object):
         if os.path.isfile('%s.bib.old' % self.project_name):
             new = '%s.bib' % self.project_name
             old = '%s.bib.old' % self.project_name
-            with nested(open(new), open(old)) as (f_new, f_old):
-                if f_new.read() != f_old.read():
-                    return True
+            with open(new) as f_new:
+                with open(old) as f_old:
+                    if f_new.read() != f_old.read():
+                        return True
 
     def read_glossaries(self):
         '''
