@@ -7,3 +7,7 @@ syntax: regexp
 syntax: glob
 *.pyc
 dist/
+*.egg-info/
+distribute-*.egg
+distribute-*.tar.gz
+
