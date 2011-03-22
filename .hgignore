@@ -1,11 +1,6 @@
-syntax: regexp
-^\.project$
-^\.pydevproject$
-^\.settings$
-^build$
-
 syntax: glob
 *.pyc
+build/
 dist/
 *.egg-info/
 distribute-*.egg
