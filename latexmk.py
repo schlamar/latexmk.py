@@ -320,7 +320,10 @@ class LatexMaker(object):
         cmd.append('%s.tex' % self.project_name)
         try:
             self.out = Popen(cmd, stdout=PIPE).communicate()[0]
-            self.out = self.out.decode(sys.getdefaultencoding())
+            try:
+                self.out = self.out.decode(sys.getdefaultencoding())
+            except UnicodeDecodeError:
+                pass
         except OSError:
             print >> sys.stderr, NO_LATEX_ERROR % self.latex_cmd
         self.latex_run_counter += 1
