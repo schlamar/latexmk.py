@@ -150,7 +150,8 @@ class LatexMaker(object):
         handler = logging.StreamHandler()
         log.addHandler(handler)
 
-        log.setLevel(logging.INFO)
+        if self.opt.verbose:
+            log.setLevel(logging.INFO)
         return log
 
 
@@ -175,9 +176,8 @@ class LatexMaker(object):
         match = TEXLIPSE_MAIN_PATTERN.search(content)
         if match:
             project_name = match.groups()[0]
-            if self.opt.verbose:
-                self.log.info('Found inputfile in ".texlipse": %s.tex'
-                              % project_name)
+            self.log.info('Found inputfile in ".texlipse": %s.tex'
+                          % project_name)
             return project_name
         else:
             self.log.error('! Fatal error: Parsing .texlipse failed.')
@@ -319,8 +319,7 @@ class LatexMaker(object):
         '''
         Start latex run.
         '''
-        if self.opt.verbose:
-            self.log.info('Running %s...' % self.latex_cmd)
+        self.log.info('Running %s...' % self.latex_cmd)
         cmd = [self.latex_cmd]
         cmd.extend(LATEX_FLAGS)
         cmd.append('%s.tex' % self.project_name)
@@ -339,8 +338,7 @@ class LatexMaker(object):
         '''
         Start bibtex run.
         '''
-        if self.opt.verbose:
-            self.log.info('Running bibtex...')
+        self.log.info('Running bibtex...')
         try:
             Popen(['bibtex', '%s' % self.project_name], stdout=PIPE).wait()
         except OSError:
@@ -376,8 +374,7 @@ class LatexMaker(object):
                         make_gloss = True
 
             if make_gloss:
-                if self.opt.verbose:
-                    self.log.info('Running makeindex (%s)...' % gloss)
+                self.log.info('Running makeindex (%s)...' % gloss)
                 try:
                     Popen(['makeindex', '-q', '-s',
                            '%s.ist' % self.project_name,
@@ -395,8 +392,7 @@ class LatexMaker(object):
         Try to open a preview of the generated document.
         Currently only supported on Windows.
         '''
-        if self.opt.verbose:
-            self.log.info('Opening preview...')
+        self.log.info('Opening preview...')
         if self.opt.pdf:
             ext = 'pdf'
         else:
