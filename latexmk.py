@@ -49,6 +49,7 @@ from optparse import OptionParser, TitledHelpFormatter
 from subprocess import Popen, PIPE
 
 import filecmp
+import logging
 import os
 import re
 import shutil
@@ -84,6 +85,7 @@ class LatexMaker(object):
     '''
     def __init__(self, project_name, opt):
         self.opt = opt
+        self.log = self._setup_logger()
 
         if project_name == '.texlipse':
             self.project_name = self._parse_texlipse_config()
@@ -140,6 +142,18 @@ class LatexMaker(object):
         if self.opt.preview:
             self.open_preview()
 
+
+    def _setup_logger(self):
+        '''Set up a logger.'''
+        log = logging.getLogger('latexmk.py')
+
+        handler = logging.StreamHandler()
+        log.addHandler(handler)
+
+        log.setLevel(logging.INFO)
+        return log
+
+
     def _parse_texlipse_config(self):
         '''
         Read the project name from the texlipse
@@ -152,9 +166,8 @@ class LatexMaker(object):
         if not os.path.isfile('.texlipse'):
             time.sleep(0.1)
             if not os.path.isfile('.texlipse'):
-                print >> sys.stderr, \
-                    '! Fatal error: File .texlipse is missing.'
-                print >> sys.stderr, '! Exiting...'
+                self.log.error('! Fatal error: File .texlipse is missing.')
+                self.log.error('! Exiting...')
                 sys.exit(1)
 
         with open('.texlipse') as fobj:
@@ -163,12 +176,12 @@ class LatexMaker(object):
         if match:
             project_name = match.groups()[0]
             if self.opt.verbose:
-                print ('Found inputfile in ".texlipse": %s.tex'
-                       % project_name)
+                self.log.info('Found inputfile in ".texlipse": %s.tex'
+                              % project_name)
             return project_name
         else:
-            print >> sys.stderr, '! Fatal error: Parsing .texlipse failed.'
-            print >> sys.stderr, '! Exiting...'
+            self.log.error('! Fatal error: Parsing .texlipse failed.')
+            self.log.error('! Exiting...')
             sys.exit(1)
 
     def _read_latex_files(self):
@@ -265,23 +278,17 @@ class LatexMaker(object):
         errors = ERROR_PATTTERN.findall(self.out)
         # "errors" is a list of tuples
         if errors:
-            print >> sys.stderr, '! Errors occurred:'
+            self.log.error('! Errors occurred:')
 
-            # pylint: disable-msg=W0142
-            # With reference doc for itertools.chain there
-            # is no magic at all.
-            # Removing carriage return "\r" because it is
-            # a new line in Eclipse console.
-            print >> sys.stderr, '\n'.join(
+            self.log.error('\n'.join(
                 [error.replace('\r', '').strip() for error
                 in chain(*errors) if error.strip()]
-            )
-            # pylint: enable-msg=W0142
+            ))
 
-            print >> sys.stderr, ('! See "%s.log" for details.'
-                                  % self.project_name)
+            self.log.error('! See "%s.log" for details.' % self.project_name)
+
             if self.opt.exit_on_error:
-                print >> sys.stderr, '! Exiting...'
+                self.log.error('! Exiting...')
                 sys.exit(1)
 
 
@@ -313,7 +320,7 @@ class LatexMaker(object):
         Start latex run.
         '''
         if self.opt.verbose:
-            print 'Running %s...' % self.latex_cmd
+            self.log.info('Running %s...' % self.latex_cmd)
         cmd = [self.latex_cmd]
         cmd.extend(LATEX_FLAGS)
         cmd.append('%s.tex' % self.project_name)
@@ -324,7 +331,7 @@ class LatexMaker(object):
             except UnicodeDecodeError:
                 pass
         except OSError:
-            print >> sys.stderr, NO_LATEX_ERROR % self.latex_cmd
+            self.log.error(NO_LATEX_ERROR % self.latex_cmd)
         self.latex_run_counter += 1
         self.check_errors()
 
@@ -333,11 +340,11 @@ class LatexMaker(object):
         Start bibtex run.
         '''
         if self.opt.verbose:
-            print 'Running bibtex...'
+            self.log.info('Running bibtex...')
         try:
             Popen(['bibtex', '%s' % self.project_name], stdout=PIPE).wait()
         except OSError:
-            print >> sys.stderr, NO_LATEX_ERROR % 'bibtex'
+            self.log.error(NO_LATEX_ERROR % 'bibtex')
             sys.exit(1)
 
         shutil.copy('%s.bib' % self.project_name,
@@ -370,14 +377,14 @@ class LatexMaker(object):
 
             if make_gloss:
                 if self.opt.verbose:
-                    print 'Running makeindex (%s)...' % gloss
+                    self.log.info('Running makeindex (%s)...' % gloss)
                 try:
                     Popen(['makeindex', '-q', '-s',
                            '%s.ist' % self.project_name,
                            '-o', fname_in, fname_out],
                            stdout=PIPE).wait()
                 except OSError:
-                    print >> sys.stderr, NO_LATEX_ERROR % 'makeindex'
+                    self.log.error(NO_LATEX_ERROR % 'makeindex')
                     sys.exit(1)
                 gloss_changed = True
 
@@ -389,7 +396,7 @@ class LatexMaker(object):
         Currently only supported on Windows.
         '''
         if self.opt.verbose:
-            print 'Opening preview...'
+            self.log.info('Opening preview...')
         if self.opt.pdf:
             ext = 'pdf'
         else:
@@ -397,12 +404,12 @@ class LatexMaker(object):
         try:
             os.startfile('%s.%s' % (self.project_name, ext))
         except AttributeError:
-            print >> sys.stderr, (
+            self.log.error(
                 'Preview-Error: Preview function is currently only '
                 'supported on Windows.'
             )
         except WindowsError:
-            print >> sys.stderr, (
+            self.log.error(
                 'Preview-Error: Extension .%s is not linked to a '
                 'specific application!' % ext
             )
