@@ -48,6 +48,7 @@ from itertools import chain
 from optparse import OptionParser, TitledHelpFormatter
 from subprocess import Popen, PIPE
 
+import filecmp
 import os
 import re
 import shutil
@@ -240,10 +241,8 @@ class LatexMaker(object):
         if os.path.isfile('%s.bib.old' % self.project_name):
             new = '%s.bib' % self.project_name
             old = '%s.bib.old' % self.project_name
-            with open(new) as f_new:
-                with open(old) as f_old:
-                    if f_new.read() != f_old.read():
-                        return True
+            if not filecmp.cmp(new, old):
+                return True
 
     def read_glossaries(self):
         '''
@@ -373,7 +372,7 @@ class LatexMaker(object):
                 if self.opt.verbose:
                     print 'Running makeindex (%s)...' % gloss
                 try:
-                    Popen(['makeindex', '-q',  '-s',
+                    Popen(['makeindex', '-q', '-s',
                            '%s.ist' % self.project_name,
                            '-o', fname_in, fname_out],
                            stdout=PIPE).wait()
