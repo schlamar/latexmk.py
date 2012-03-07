@@ -5,10 +5,10 @@ use_setuptools()
 
 from setuptools import setup
 
-        
+
 setup(
-      name = 'latexmk.py',      
-      version = '0.2', 
+      name = 'latexmk.py',
+      version = '0.3-dev',
       description=('Latexmk.py completely automates the process of '
                    'generating a LaTeX document.'),
       long_description=('Latexmk.py completely automates the process of '
@@ -16,9 +16,9 @@ setup(
                         'for a document, latexmk.py issues the appropriate '
                         'sequence of commands to generate a .dvi or .pdf '
                         'version of the document.'),
-      author='Marc Schlaich',  
+      author='Marc Schlaich',
       author_email='marc.schlaich@googlemail.com',
-      url='http://bitbucket.org/ms4py/latexmk.py/',
+      url='http://github.com/ms4py/latexmk.py',
       license='MIT',
       platforms = 'any',
       classifiers=['Development Status :: 4 - Beta',
@@ -28,8 +28,8 @@ setup(
                    'Programming Language :: Python',
                    'Topic :: Printing',
                    'Topic :: Text Processing :: Markup :: LaTeX'],
-                   
-      py_modules = ['latexmk'],
-      entry_points = {'console_scripts': ['latexmk = latexmk:main']},
+
+      py_modules = ['latexmake'],
+      entry_points = {'console_scripts': ['latexmk.py = latexmake:main']},
       use_2to3 = True
       )

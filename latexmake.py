@@ -57,7 +57,7 @@ import sys
 import time
 
 __author__ = 'Marc Schlaich'
-__version__ = '0.2'
+__version__ = '0.3-dev'
 __license__ = 'MIT'
 
 
