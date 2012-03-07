@@ -46,7 +46,7 @@ from __future__ import with_statement
 from collections import defaultdict
 from itertools import chain
 from optparse import OptionParser, TitledHelpFormatter
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, call
 
 import filecmp
 import logging
@@ -397,18 +397,22 @@ class LatexMaker(object):
             ext = 'pdf'
         else:
             ext = 'dvi'
-        try:
-            os.startfile('%s.%s' % (self.project_name, ext))
-        except AttributeError:
+        filename = '%s.%s' % (self.project_name, ext)
+        if sys.platform == 'win32':
+            try:
+                os.startfile(filename)
+            except OSError:
+                self.log.error(
+                    'Preview-Error: Extension .%s is not linked to a '
+                    'specific application!' % ext
+                )
+        elif sys.platform == 'darwin':
+            call(['open', filename])
+        else:
             self.log.error(
-                'Preview-Error: Preview function is currently only '
-                'supported on Windows.'
-            )
-        except WindowsError:
-            self.log.error(
-                'Preview-Error: Extension .%s is not linked to a '
-                'specific application!' % ext
-            )
+                    'Preview-Error: Preview function is currently not '
+                    'supported on Linux.'
+                )
 
     def need_latex_rerun(self):
         '''
