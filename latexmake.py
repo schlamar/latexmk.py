@@ -61,7 +61,6 @@ __version__ = '0.3-dev'
 __license__ = 'MIT'
 
 
-
 CITE_PATTERN = re.compile(r'\\citation\{(.*)\}')
 ERROR_PATTTERN = re.compile(r'(?:^! (.*\nl\..*)$)|(?:^! (.*)$)|'
                             '(No pages of output.)', re.M)
@@ -78,6 +77,7 @@ NO_LATEX_ERROR = (
     'Could not run command "%s". '
     'Is your latex distribution under your PATH?'
 )
+
 
 class LatexMaker(object):
     '''
@@ -142,7 +142,6 @@ class LatexMaker(object):
         if self.opt.preview:
             self.open_preview()
 
-
     def _setup_logger(self):
         '''Set up a logger.'''
         log = logging.getLogger('latexmk.py')
@@ -153,7 +152,6 @@ class LatexMaker(object):
         if self.opt.verbose:
             log.setLevel(logging.INFO)
         return log
-
 
     def _parse_texlipse_config(self):
         '''
@@ -219,7 +217,6 @@ class LatexMaker(object):
                     gloss_files[gloss] = fobj.read()
 
         return cite_counter, toc_file, gloss_files
-
 
     def _is_toc_changed(self, toc_file):
         '''
@@ -290,7 +287,6 @@ class LatexMaker(object):
             if self.opt.exit_on_error:
                 self.log.error('! Exiting...')
                 sys.exit(1)
-
 
     def generate_citation_counter(self):
         '''
@@ -423,17 +419,20 @@ class LatexMaker(object):
                 return True
         return False
 
+
 class CustomFormatter(TitledHelpFormatter):
     '''
     Standard Formatter removes linkbreaks.
     '''
     def __init__(self):
         TitledHelpFormatter.__init__(self)
+
     def format_description(self, description):
         '''
         Description is manual formatted, no changes are done.
         '''
         return description
+
 
 def _count_citations(aux_file):
     '''
@@ -450,6 +449,7 @@ def _count_citations(aux_file):
         counter[name] += 1
 
     return counter
+
 
 def main():
     '''
