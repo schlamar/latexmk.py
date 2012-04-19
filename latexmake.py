@@ -10,7 +10,7 @@ It is specialized to run as a custom builder for the
 Eclipse-Plugin "Texlipse".
 
 See Website for details:
-http://bitbucket.org/ms4py/latexmk.py/
+https://github.com/ms4py/latexmk.py
 
 
 Inspired by http://ctan.tug.org/tex-archive/support/latexmk/
@@ -49,6 +49,7 @@ from optparse import OptionParser, TitledHelpFormatter
 from subprocess import Popen, PIPE
 
 import filecmp
+import fnmatch
 import logging
 import os
 import re
@@ -453,7 +454,7 @@ def main():
     a new instance of L{LatexMaker}.
     '''
     version = '%%prog %s' % __version__
-    usage = 'Usage: %prog [options] filename'
+    usage = 'Usage: %prog [options] [filename]'
 
     # Read description from doc
     doc_text = ''
@@ -467,7 +468,9 @@ def main():
                    '%s'
                    'Arguments\n'
                    '=========\n'
-                   '  filename     input filename without extension (*.tex)\n'
+                   '  filename     input filename\n'
+                   '                 If omitted the current directory will\n'
+                   '                 be searched for a single *.tex file.'
                    % doc_text)
 
     parser = OptionParser(usage=usage, version=version,
@@ -489,10 +492,18 @@ def main():
                       default=True, help='use "pdflatex" instead of latex')
 
     opt, args = parser.parse_args()
-    if len(args) != 1:
+    if len(args) == 0:
+        tex_files = fnmatch.filter(os.listdir(os.getcwd()), '*.tex')
+        if len(tex_files) == 1:
+            name = tex_files[0]
+        else:
+            parser.error('could not find a single *.tex file in current dir')
+    elif len(args) == 1:
+        name = args[0]
+    else:
         parser.error('incorrect number of arguments')
 
-    LatexMaker(args[0], opt)
+    LatexMaker(name, opt)
 
 if __name__ == '__main__':
     main()
