@@ -7,8 +7,8 @@ from setuptools import setup
 
 
 setup(
-      name = 'latexmk.py',
-      version = '0.3-dev',
+      name='latexmk.py',
+      version='0.3dev',
       description=('Latexmk.py completely automates the process of '
                    'generating a LaTeX document.'),
       long_description=('Latexmk.py completely automates the process of '
@@ -20,7 +20,7 @@ setup(
       author_email='marc.schlaich@googlemail.com',
       url='http://github.com/ms4py/latexmk.py',
       license='MIT',
-      platforms = 'any',
+      platforms='any',
       classifiers=['Development Status :: 4 - Beta',
                    'Intended Audience :: End Users/Desktop',
                    'License :: OSI Approved :: MIT License',
@@ -29,7 +29,7 @@ setup(
                    'Topic :: Printing',
                    'Topic :: Text Processing :: Markup :: LaTeX'],
 
-      py_modules = ['latexmake'],
-      entry_points = {'console_scripts': ['latexmk.py = latexmake:main']},
-      use_2to3 = True
+      py_modules=['latexmake'],
+      entry_points={'console_scripts': ['latexmk.py = latexmake:main']},
+      use_2to3=True
       )
