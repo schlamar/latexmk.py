@@ -13,6 +13,19 @@ Eclipse-Plugin "Texlipse".
 
 Inspired by http://ctan.tug.org/tex-archive/support/latexmk/
 
+
+Installation
+------------
+
+Preferable via pip::
+
+    pip install latexmk.py
+
+For source installation you need
+`distribute <http://pypi.python.org/pypi/distribute>`_ or
+`setuptools <http://pypi.python.org/pypi/setuptools>`_
+
+
 License
 -------
 
