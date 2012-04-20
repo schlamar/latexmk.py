@@ -2,43 +2,14 @@
 # coding: utf-8
 
 '''
-Latexmk.py completely automates the process of generating
-a LaTeX document. Given the source files for a document,
-latexmk.py issues the appropriate sequence of commands to
-generate a .dvi or .pdf version of the document.
-It is specialized to run as a custom builder for the
-Eclipse-Plugin "Texlipse".
+    latexmake
+    ~~~~~~~~~
 
-See Website for details:
-https://github.com/ms4py/latexmk.py
+    Python module for latexmk.py which completely automates
+    the process of generating a LaTeX document.
 
-
-Inspired by http://ctan.tug.org/tex-archive/support/latexmk/
-
-#############################################################################
-
-Licence (MIT)
--------------
-
-Copyright (c) 2010, Marc Schlaich.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+    :copyright: (c) 2012 by Marc Schlaich
+    :license: MIT, see LICENSE for more details.
 '''
 
 from __future__ import with_statement
@@ -58,7 +29,7 @@ import sys
 import time
 
 __author__ = 'Marc Schlaich'
-__version__ = '0.3-dev'
+__version__ = '0.3dev'
 __license__ = 'MIT'
 
 
