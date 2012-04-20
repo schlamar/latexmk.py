@@ -33,6 +33,7 @@ __version__ = '0.3dev'
 __license__ = 'MIT'
 
 
+BIB_PATTERN = re.compile(r'\\bibdata\{(.*)\}')
 CITE_PATTERN = re.compile(r'\\citation\{(.*)\}')
 ERROR_PATTTERN = re.compile(r'(?:^! (.*\nl\..*)$)|(?:^! (.*)$)|'
                             '(No pages of output.)', re.M)
@@ -75,44 +76,6 @@ class LatexMaker(object):
         self.out = ''
         self.glossaries = dict()
         self.latex_run_counter = 0
-
-        # store files
-        self.old_dir = []
-        if self.opt.clean:
-            self.old_dir = os.listdir('.')
-
-        cite_counter, toc_file, gloss_files = self._read_latex_files()
-
-        self.latex_run()
-        self.read_glossaries()
-
-        gloss_changed = self.makeindex_runs(gloss_files)
-        if gloss_changed or self._is_toc_changed(toc_file):
-            self.latex_run()
-
-        if self._need_bib_run(cite_counter):
-            self.bibtex_run()
-            self.latex_run()
-
-        while (self.latex_run_counter < MAX_RUNS):
-            if not self.need_latex_rerun():
-                break
-            self.latex_run()
-
-        if self.opt.clean:
-            ending = '.dvi'
-            if self.opt.pdf:
-                ending = '.pdf'
-
-            for fname in os.listdir('.'):
-                if not (fname in self.old_dir or fname.endswith(ending)):
-                    try:
-                        os.remove(fname)
-                    except IOError:
-                        pass
-
-        if self.opt.preview:
-            self.open_preview()
 
     def _setup_logger(self):
         '''Set up a logger.'''
@@ -391,6 +354,46 @@ class LatexMaker(object):
                 return True
         return False
 
+    def run(self):
+        '''Run the LaTeX compilation.'''
+        # store files
+        self.old_dir = []
+        if self.opt.clean:
+            self.old_dir = os.listdir('.')
+
+        cite_counter, toc_file, gloss_files = self._read_latex_files()
+
+        self.latex_run()
+        self.read_glossaries()
+
+        gloss_changed = self.makeindex_runs(gloss_files)
+        if gloss_changed or self._is_toc_changed(toc_file):
+            self.latex_run()
+
+        if self._need_bib_run(cite_counter):
+            self.bibtex_run()
+            self.latex_run()
+
+        while (self.latex_run_counter < MAX_RUNS):
+            if not self.need_latex_rerun():
+                break
+            self.latex_run()
+
+        if self.opt.clean:
+            ending = '.dvi'
+            if self.opt.pdf:
+                ending = '.pdf'
+
+            for fname in os.listdir('.'):
+                if not (fname in self.old_dir or fname.endswith(ending)):
+                    try:
+                        os.remove(fname)
+                    except IOError:
+                        pass
+
+        if self.opt.preview:
+            self.open_preview()
+
 
 class CustomFormatter(TitledHelpFormatter):
     '''
@@ -478,7 +481,7 @@ def main():
     else:
         parser.error('incorrect number of arguments')
 
-    LatexMaker(name, opt)
+    LatexMaker(name, opt).run()
 
 if __name__ == '__main__':
     main()
