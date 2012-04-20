@@ -11,10 +11,6 @@ generate a .dvi or .pdf version of the document.
 It is specialized to run as a custom builder for the
 Eclipse-Plugin "Texlipse".
 
-See Website for details:
-https://github.com/ms4py/latexmk.py
-
-
 Inspired by http://ctan.tug.org/tex-archive/support/latexmk/
 
 License
