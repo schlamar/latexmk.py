@@ -76,6 +76,7 @@ class LatexMaker(object):
         self.out = ''
         self.glossaries = dict()
         self.latex_run_counter = 0
+        self.bib_file = ''
 
     def _setup_logger(self):
         '''Set up a logger.'''
@@ -173,7 +174,15 @@ class LatexMaker(object):
            during first latex run.
         4. Examine *.bib for changes.
         '''
-        if not os.path.isfile('%s.bib' % self.project_name):
+        with open('%s.aux' % self.project_name) as fobj:
+            match = BIB_PATTERN.search(fobj.read())
+            if not match:
+                return False
+            else:
+                self.bib_file = match.group(1)
+
+        if not os.path.isfile('%s.bib' % self.bib_file):
+            self.log.warning('Could not find *.bib file.')
             return False
 
         if (re.search('No file %s.bbl.' % self.project_name, self.out) or
@@ -271,13 +280,14 @@ class LatexMaker(object):
         '''
         self.log.info('Running bibtex...')
         try:
-            Popen(['bibtex', '%s' % self.project_name], stdout=PIPE).wait()
+            # Here we should refere to the *.aux, not the bib file
+            Popen(['bibtex', self.project_name], stdout=PIPE).wait()
         except OSError:
             self.log.error(NO_LATEX_ERROR % 'bibtex')
             sys.exit(1)
 
-        shutil.copy('%s.bib' % self.project_name,
-                    '%s.bib.old' % self.project_name)
+        shutil.copy('%s.bib' % self.bib_file,
+                    '%s.bib.old' % self.bib_file)
 
     def makeindex_runs(self, gloss_files):
         '''
