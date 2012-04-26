@@ -264,7 +264,7 @@ class LatexMaker(object):
         cmd.extend(LATEX_FLAGS)
         cmd.append('%s.tex' % self.project_name)
         try:
-            self.out = Popen(cmd, stdout=PIPE).communicate()[0]
+            self.out = Popen(cmd, stdout=PIPE, stderr=PIPE).communicate()[0]
             try:
                 self.out = self.out.decode(sys.getdefaultencoding())
             except UnicodeDecodeError:
