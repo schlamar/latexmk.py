@@ -192,9 +192,9 @@ class LatexMaker(object):
         if old_cite_counter != self.generate_citation_counter():
             return True
 
-        if os.path.isfile('%s.bib.old' % self.project_name):
-            new = '%s.bib' % self.project_name
-            old = '%s.bib.old' % self.project_name
+        if os.path.isfile('%s.bib.old' % self.bib_file):
+            new = '%s.bib' % self.bib_file
+            old = '%s.bib.old' % self.bib_file
             if not filecmp.cmp(new, old):
                 return True
 
