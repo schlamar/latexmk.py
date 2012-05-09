@@ -26,6 +26,18 @@ For source installation you need
 `setuptools <http://pypi.python.org/pypi/setuptools>`_
 
 
+Usage
+-----
+
+::
+
+    $ latexmk.py [options] [filename]
+
+For details run::
+
+    $ latexmk.py -h
+
+
 License
 -------
 
