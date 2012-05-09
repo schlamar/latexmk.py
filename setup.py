@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
       name='latexmk.py',
-      version='0.3dev',
+      version='0.3',
       description=('Latexmk.py completely automates the process of '
                    'generating a LaTeX document.'),
       long_description=('Latexmk.py completely automates the process of '
