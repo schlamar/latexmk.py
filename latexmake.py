@@ -44,7 +44,7 @@ LATEX_RERUN_PATTERNS = [re.compile(pattr) for pattr in
                          r'No file .*(\.toc|\.lof)\.']]
 TEXLIPSE_MAIN_PATTERN = re.compile(r'^mainTexFile=(.*)(?:\.tex)$', re.M)
 
-LATEX_FLAGS = ['-interaction=nonstopmode', '-shell-escape']
+LATEX_FLAGS = ['-interaction=nonstopmode', '-shell-escape', '--synctex=1']
 MAX_RUNS = 5
 NO_LATEX_ERROR = (
     'Could not run command "%s". '
