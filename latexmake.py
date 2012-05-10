@@ -45,7 +45,7 @@ LATEX_RERUN_PATTERNS = [re.compile(pattr) for pattr in
 TEXLIPSE_MAIN_PATTERN = re.compile(r'^mainTexFile=(.*)(?:\.tex)$', re.M)
 
 LATEX_FLAGS = ['-interaction=nonstopmode', '-shell-escape', '--synctex=1']
-MAX_RUNS = 5
+MAX_RUNS = 4
 NO_LATEX_ERROR = (
     'Could not run command "%s". '
     'Is your latex distribution under your PATH?'
