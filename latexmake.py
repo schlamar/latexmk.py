@@ -476,8 +476,8 @@ def main():
     parser.add_option('-p', '--preview',
                       action='store_true', dest='preview', default=False,
                       help='try to open preview of generated document')
-    parser.add_option('--pdf', action='store_true', dest='pdf',
-                      default=True, help='use "pdflatex" instead of latex')
+    parser.add_option('--dvi', action='store_false', dest='pdf',
+                      default=True, help='use "latex" instead of pdflatex')
 
     opt, args = parser.parse_args()
     if len(args) == 0:
