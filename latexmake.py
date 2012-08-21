@@ -305,7 +305,7 @@ class LatexMaker(object):
             if re.search('No file %s.' % fname_in, self.out):
                 make_gloss = True
             if not os.path.isfile(fname_out):
-                make_gloss = False
+                make_gloss = True
             else:
                 with open(fname_out) as fobj:
                     try:
