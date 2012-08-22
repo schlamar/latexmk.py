@@ -264,14 +264,18 @@ class LatexMaker(object):
         cmd.extend(LATEX_FLAGS)
         cmd.append('%s.tex' % self.project_name)
         try:
-            self.out = Popen(cmd, stdout=PIPE, stderr=PIPE).communicate()[0]
-            try:
-                self.out = self.out.decode(sys.getdefaultencoding())
-            except UnicodeDecodeError:
-                pass
+            with open(os.devnull, 'w') as null:
+                Popen(cmd, stdout=null, stderr=null).wait()
         except OSError:
             self.log.error(NO_LATEX_ERROR % self.latex_cmd)
         self.latex_run_counter += 1
+
+        with open('%s.log' % self.project_name) as fobj:
+            self.out = fobj.read()
+        try:
+            self.out = self.out.decode(sys.getdefaultencoding())
+        except UnicodeDecodeError:
+            pass
         self.check_errors()
 
     def bibtex_run(self):
@@ -280,8 +284,8 @@ class LatexMaker(object):
         '''
         self.log.info('Running bibtex...')
         try:
-            # Here we should refere to the *.aux, not the bib file
-            Popen(['bibtex', self.project_name], stdout=PIPE).wait()
+            with open(os.devnull, 'w') as null:
+                Popen(['bibtex', self.project_name], stdout=null).wait()
         except OSError:
             self.log.error(NO_LATEX_ERROR % 'bibtex')
             sys.exit(1)
@@ -317,10 +321,11 @@ class LatexMaker(object):
             if make_gloss:
                 self.log.info('Running makeindex (%s)...' % gloss)
                 try:
-                    Popen(['makeindex', '-q', '-s',
+                    cmd = ['makeindex', '-q', '-s',
                            '%s.ist' % self.project_name,
-                           '-o', fname_in, fname_out],
-                           stdout=PIPE).wait()
+                           '-o', fname_in, fname_out]
+                    with open(os.devnull, 'w') as null:
+                        Popen(cmd, stdout=null).wait()
                 except OSError:
                     self.log.error(NO_LATEX_ERROR % 'makeindex')
                     sys.exit(1)
