@@ -17,7 +17,7 @@ from __future__ import with_statement
 from collections import defaultdict
 from itertools import chain
 from optparse import OptionParser, TitledHelpFormatter
-from subprocess import Popen, PIPE, call
+from subprocess import Popen, call
 
 import filecmp
 import fnmatch
