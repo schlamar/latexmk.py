@@ -35,6 +35,8 @@ __license__ = 'MIT'
 
 BIB_PATTERN = re.compile(r'\\bibdata\{(.*)\}')
 CITE_PATTERN = re.compile(r'\\citation\{(.*)\}')
+BIBCITE_PATTERN = re.compile(r'\\bibcite\{(.*)\}\{(.*)\}')
+BIBENTRY_PATTERN = re.compile(r'@.*\{(.*),\s')
 ERROR_PATTTERN = re.compile(r'(?:^! (.*\nl\..*)$)|(?:^! (.*)$)|'
                             '(No pages of output.)', re.M)
 LATEX_RERUN_PATTERNS = [re.compile(pattr) for pattr in
@@ -394,6 +396,22 @@ class LatexMaker(object):
                 break
             self.latex_run()
 
+        if self.opt.check_cite:
+            cites = set()
+            with open('%s.aux' % self.project_name) as fobj:
+                aux_content = fobj.read()
+
+            for match in BIBCITE_PATTERN.finditer(aux_content):
+                name = match.groups()[0]
+                cites.add(name)
+
+            with open('%s.bib' % self.bib_file) as fobj:
+                bib_content = fobj.read()
+            for match in BIBENTRY_PATTERN.finditer(bib_content):
+                name = match.groups()[0]
+                if name not in cites:
+                    self.log.info('Bib entry not cited: "%s"' % name)
+
         if self.opt.clean:
             ending = '.dvi'
             if self.opt.pdf:
@@ -483,6 +501,9 @@ def main():
                       help='try to open preview of generated document')
     parser.add_option('--dvi', action='store_false', dest='pdf',
                       default=True, help='use "latex" instead of pdflatex')
+    parser.add_option('--check-cite', action='store_true', dest='check_cite',
+                      default=False,
+                      help='check bibtex file for uncited entries')
 
     opt, args = parser.parse_args()
     if len(args) == 0:
