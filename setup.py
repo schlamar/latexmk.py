@@ -15,7 +15,7 @@ setup(
                         'version of the document.'),
       author='Marc Schlaich',
       author_email='marc.schlaich@googlemail.com',
-      url='http://github.com/ms4py/latexmk.py',
+      url='http://github.com/schlamar/latexmk.py',
       license='MIT',
       platforms='any',
       classifiers=['Development Status :: 4 - Beta',
