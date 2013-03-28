@@ -189,7 +189,7 @@ class LatexMaker(object):
             return False
 
         if (re.search('No file %s.bbl.' % self.project_name, self.out) or
-            re.search('LaTeX Warning: Citation .* undefined', self.out)):
+                re.search('LaTeX Warning: Citation .* undefined', self.out)):
             return True
 
         if old_cite_counter != self.generate_citation_counter():
@@ -226,7 +226,7 @@ class LatexMaker(object):
 
             self.log.error('\n'.join(
                 [error.replace('\r', '').strip() for error
-                in chain(*errors) if error.strip()]
+                 in chain(*errors) if error.strip()]
             ))
 
             self.log.error('! See "%s.log" for details.' % self.project_name)
@@ -356,9 +356,9 @@ class LatexMaker(object):
             call(['open', filename])
         else:
             self.log.error(
-                    'Preview-Error: Preview function is currently not '
-                    'supported on Linux.'
-                )
+                'Preview-Error: Preview function is currently not '
+                'supported on Linux.'
+            )
 
     def need_latex_rerun(self):
         '''
