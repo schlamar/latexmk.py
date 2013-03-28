@@ -3,9 +3,15 @@
 from setuptools import setup
 
 
+def get_version(fname='latexmake.py'):
+    with open(fname) as f:
+        for line in f:
+            if line.startswith('__version__'):
+                return eval(line.split('=')[-1])
+
 setup(
       name='latexmk.py',
-      version='0.4dev',
+      version=get_version(),
       description=('Latexmk.py completely automates the process of '
                    'generating a LaTeX document.'),
       long_description=('Latexmk.py completely automates the process of '
