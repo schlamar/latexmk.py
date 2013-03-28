@@ -16,7 +16,7 @@ from __future__ import with_statement
 
 from collections import defaultdict
 from itertools import chain
-from optparse import OptionParser, TitledHelpFormatter
+from optparse import OptionParser
 from subprocess import Popen, call
 
 import codecs
@@ -426,20 +426,6 @@ class LatexMaker(object):
             self.open_preview()
 
 
-class CustomFormatter(TitledHelpFormatter):
-    '''
-    Standard Formatter removes linkbreaks.
-    '''
-    def __init__(self):
-        TitledHelpFormatter.__init__(self)
-
-    def format_description(self, description):
-        '''
-        Description is manual formatted, no changes are done.
-        '''
-        return description
-
-
 def _count_citations(aux_file):
     '''
     Counts the citations in an aux-file.
@@ -462,8 +448,9 @@ def main():
     Set up "optparse" and pass the options to
     a new instance of L{LatexMaker}.
     '''
-    version = '%%prog %s' % __version__
-    usage = 'Usage: %prog [options] [filename]'
+    prog = 'latexmk.py'
+    version = __version__
+    usage = '%prog [options] [filename]'
 
     # Read description from doc
     doc_text = ''
@@ -472,19 +459,7 @@ def main():
             break
         doc_text += '  %s\n' % line
 
-    description = ('Description\n'
-                   '===========\n'
-                   '%s'
-                   'Arguments\n'
-                   '=========\n'
-                   '  filename     input filename\n'
-                   '                 If omitted the current directory will\n'
-                   '                 be searched for a single *.tex file.'
-                   % doc_text)
-
-    parser = OptionParser(usage=usage, version=version,
-                          description=description,
-                          formatter=CustomFormatter())
+    parser = OptionParser(prog=prog, usage=usage, version=version)
     parser.add_option('-c', '--clean',
                       action='store_true', dest='clean', default=False,
                       help='clean all temporary files after converting')
@@ -516,6 +491,7 @@ def main():
         parser.error('incorrect number of arguments')
 
     LatexMaker(name, opt).run()
+
 
 if __name__ == '__main__':
     main()
