@@ -19,26 +19,25 @@ def get_long_description():
 
 
 setup(
-      name='latexmk.py',
-      version=get_version(),
-      description=('Latexmk.py completely automates the process of '
-                   'generating a LaTeX document.'),
-      long_description=get_long_description(),
-      author='Marc Schlaich',
-      author_email='marc.schlaich@googlemail.com',
-      url='http://github.com/schlamar/latexmk.py',
-      license='MIT',
-      platforms='any',
-      classifiers=['Development Status :: 4 - Beta',
-                   'Intended Audience :: End Users/Desktop',
-                   'License :: OSI Approved :: MIT License',
-                   'Operating System :: OS Independent',
-                   'Programming Language :: Python',
-                   'Programming Language :: Python :: 2',
-                   'Programming Language :: Python :: 3',
-                   'Topic :: Printing',
-                   'Topic :: Text Processing :: Markup :: LaTeX'],
-
-      py_modules=['latexmake'],
-      entry_points={'console_scripts': ['latexmk.py = latexmake:main']},
-      )
+    name='latexmk.py',
+    version=get_version(),
+    description=('Latexmk.py completely automates the process of '
+                 'generating a LaTeX document.'),
+    long_description=get_long_description(),
+    author='Marc Schlaich',
+    author_email='marc.schlaich@googlemail.com',
+    url='http://github.com/schlamar/latexmk.py',
+    license='MIT',
+    platforms='any',
+    classifiers=['Development Status :: 4 - Beta',
+                 'Intended Audience :: End Users/Desktop',
+                 'License :: OSI Approved :: MIT License',
+                 'Operating System :: OS Independent',
+                 'Programming Language :: Python',
+                 'Programming Language :: Python :: 2',
+                 'Programming Language :: Python :: 3',
+                 'Topic :: Printing',
+                 'Topic :: Text Processing :: Markup :: LaTeX'],
+    py_modules=['latexmake'],
+    entry_points={'console_scripts': ['latexmk.py = latexmake:main']},
+)
