@@ -8,7 +8,7 @@
     Python module for latexmk.py which completely automates
     the process of generating a LaTeX document.
 
-    :copyright: (c) 2012 by Marc Schlaich
+    :copyright: (c) 2013 by Marc Schlaich
     :license: MIT, see LICENSE for more details.
 '''
 
