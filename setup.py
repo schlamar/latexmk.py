@@ -9,16 +9,21 @@ def get_version(fname='latexmake.py'):
             if line.startswith('__version__'):
                 return eval(line.split('=')[-1])
 
+
+def get_long_description():
+    descr = []
+    for fname in ('README.rst',):
+        with open(fname) as f:
+            descr.append(f.read())
+    return '\n\n'.join(descr)
+
+
 setup(
       name='latexmk.py',
       version=get_version(),
       description=('Latexmk.py completely automates the process of '
                    'generating a LaTeX document.'),
-      long_description=('Latexmk.py completely automates the process of '
-                        'generating a LaTeX document. Given the source files '
-                        'for a document, latexmk.py issues the appropriate '
-                        'sequence of commands to generate a .dvi or .pdf '
-                        'version of the document.'),
+      long_description=get_long_description(),
       author='Marc Schlaich',
       author_email='marc.schlaich@googlemail.com',
       url='http://github.com/schlamar/latexmk.py',
