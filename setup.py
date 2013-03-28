@@ -23,10 +23,11 @@ setup(
                    'License :: OSI Approved :: MIT License',
                    'Operating System :: OS Independent',
                    'Programming Language :: Python',
+                   'Programming Language :: Python :: 2',
+                   'Programming Language :: Python :: 3',
                    'Topic :: Printing',
                    'Topic :: Text Processing :: Markup :: LaTeX'],
 
       py_modules=['latexmake'],
       entry_points={'console_scripts': ['latexmk.py = latexmake:main']},
-      use_2to3=True
       )

@@ -19,6 +19,7 @@ from itertools import chain
 from optparse import OptionParser, TitledHelpFormatter
 from subprocess import Popen, call
 
+import codecs
 import filecmp
 import fnmatch
 import logging
@@ -272,12 +273,9 @@ class LatexMaker(object):
             self.log.error(NO_LATEX_ERROR % self.latex_cmd)
         self.latex_run_counter += 1
 
-        with open('%s.log' % self.project_name) as fobj:
+        fname = '%s.log' % self.project_name
+        with codecs.open(fname, 'r', 'utf-8', 'replace') as fobj:
             self.out = fobj.read()
-        try:
-            self.out = self.out.decode(sys.getdefaultencoding())
-        except UnicodeDecodeError:
-            pass
         self.check_errors()
 
     def bibtex_run(self):
