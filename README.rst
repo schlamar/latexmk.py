@@ -1,3 +1,5 @@
+Development is stopped. See #11 for the reason and to get to a maintained fork.
+
 latexmk.py
 ==========
 
