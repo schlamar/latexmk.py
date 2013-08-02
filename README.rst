@@ -1,4 +1,5 @@
-Development is stopped. See #11 for the reason and to get to a maintained fork.
+Development is stopped. See [#11](https://github.com/schlamar/latexmk.py/pull/11) 
+for the reason and to get to a maintained fork.
 
 latexmk.py
 ==========
